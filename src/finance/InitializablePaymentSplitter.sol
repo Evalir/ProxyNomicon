@@ -503,6 +503,9 @@ abstract contract Context {
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import {Initializable} from "../lib/Initializable.sol";
+import "forge-std/Test.sol";
+
 /**
  * @title PaymentSplitter
  * @dev This contract allows to split Ether payments among a group of accounts. The sender does not need to be aware
@@ -521,7 +524,7 @@ pragma solidity ^0.8.0;
  * tokens that apply fees during transfers, are likely to not be supported as expected. If in doubt, we encourage you
  * to run tests before sending real value to this contract.
  */
-contract PaymentSplitter is Context {
+contract PaymentSplitter is Context, Initializable {
     event PayeeAdded(address account, uint256 shares);
     event PaymentReleased(address to, uint256 amount);
     event ERC20PaymentReleased(IERC20 indexed token, address to, uint256 amount);
@@ -538,19 +541,19 @@ contract PaymentSplitter is Context {
     mapping(IERC20 => mapping(address => uint256)) private _erc20Released;
 
     /**
-     * @dev Creates an instance of `PaymentSplitter` where each account in `payees` is assigned the number of shares at
+     * @dev Initializes the instance of `PaymentSplitter` where each account in `payees` is assigned the number of shares at
      * the matching position in the `shares` array.
      *
      * All addresses in `payees` must be non-zero. Both arrays must have the same non-zero length, and there must be no
      * duplicates in `payees`.
      */
-    constructor(address[] memory payees, uint256[] memory shares_) payable {
+    function initialize(address[] memory payees, uint256[] memory shares_) external payable onlyUninitialized {
         require(payees.length == shares_.length, "PaymentSplitter: payees and shares length mismatch");
         require(payees.length > 0, "PaymentSplitter: no payees");
-
         for (uint256 i = 0; i < payees.length; i++) {
             _addPayee(payees[i], shares_[i]);
         }
+        initialized();
     }
 
     /**
@@ -638,7 +641,7 @@ contract PaymentSplitter is Context {
      * @dev Triggers a transfer to `account` of the amount of Ether they are owed, according to their percentage of the
      * total shares and their previous withdrawals.
      */
-    function release(address payable account) public virtual {
+    function release(address payable account) public onlyInitialized {
         require(_shares[account] > 0, "PaymentSplitter: account has no shares");
 
         uint256 payment = releasable(account);
@@ -661,7 +664,7 @@ contract PaymentSplitter is Context {
      * percentage of the total shares and their previous withdrawals. `token` must be the address of an IERC20
      * contract.
      */
-    function release(IERC20 token, address account) public virtual {
+    function release(IERC20 token, address account) public onlyInitialized {
         require(_shares[account] > 0, "PaymentSplitter: account has no shares");
 
         uint256 payment = releasable(token, account);

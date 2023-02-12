@@ -13,6 +13,7 @@ contract TheAnswer {
     function getAnswer1() public view returns (uint256) {
         return answer1;
     }
+
     function getAnswer2() public view returns (uint256) {
         return answer2;
     }
