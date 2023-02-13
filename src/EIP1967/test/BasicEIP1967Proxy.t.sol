@@ -14,10 +14,10 @@ contract EIP1967ProxyTest is NomiconTest {
 
     function setUp() public {
         splitterImplementation = new PaymentSplitter();
+        splitterImplementation.freezeImplementation();
 
         proxy = new BasicEIP1967Proxy(address(this));
         proxy.setImplementation(address(splitterImplementation));
-        splitterImplementation.freezeImplementation();
 
         vm.label(address(proxy), "Proxy Splitter");
         vm.label(address(splitterImplementation), "Splitter implementation");
