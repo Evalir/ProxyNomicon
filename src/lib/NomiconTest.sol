@@ -13,4 +13,12 @@ contract NomiconTest is Test {
         addr = vm.addr(pk);
         vm.label(addr, label);
     }
+
+    function bytesToAddress(bytes memory data) internal pure returns (address) {
+        return address(uint160(uint256(bytes32(data))));
+    }
+
+    function bytesToUint256(bytes memory data) internal pure returns (uint256) {
+        return uint256(bytes32(data));
+    }
 }

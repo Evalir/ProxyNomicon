@@ -36,9 +36,11 @@ contract EIP1967ProxyTest is NomiconTest {
         shares[0] = 1;
         shares[1] = 1;
 
-        (bool success,) = address(proxy).call(abi.encodeWithSignature("initialize(address[],uint256[])", payees, shares));
+        (bool success,) =
+            address(proxy).call(abi.encodeWithSignature("initialize(address[],uint256[])", payees, shares));
         assert(success);
-        (bool shouldFail,) = address(proxy).call(abi.encodeWithSignature("initialize(address[],uint256[])", payees, shares));
+        (bool shouldFail,) =
+            address(proxy).call(abi.encodeWithSignature("initialize(address[],uint256[])", payees, shares));
         assert(!shouldFail);
 
         (, bytes memory proxyInitializedData) = address(proxy).call(abi.encodeWithSignature("isInitialized()"));

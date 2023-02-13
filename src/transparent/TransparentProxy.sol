@@ -28,7 +28,6 @@ contract BasicTransparentUpgradeableProxy is EIP1967Proxy {
         emit Upgraded(newImplementation);
     }
 
-
     function changeAdmin(address newAdmin) public ifAdmin {
         address previousAdmin = loadAddressSlot(EIP1967_ADMIN_SLOT);
         setAddressSlot(EIP1967_ADMIN_SLOT, newAdmin);

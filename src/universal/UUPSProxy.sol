@@ -9,11 +9,16 @@ contract UUPSProxy is EIP1967Proxy {
 
     event AdminChanged(address previousAdmin, address newAdmin);
 
-    constructor(address _admin) {
+    constructor(address _admin, address implementation) {
         bytes32 adminSlot = EIP1967_ADMIN_SLOT;
         assembly {
             sstore(adminSlot, _admin)
         }
+        _setImplementation(implementation);
+    }
+
+    function implementation() external view returns (address) {
+        return _getImplementation();
     }
 
     modifier onlyAdmin() {
@@ -30,12 +35,12 @@ contract UUPSProxy is EIP1967Proxy {
 }
 
 abstract contract UUPSUpgradeable is IERC1822Proxiable, EIP1967Upgradeable {
-    address private immutable __self = address(this); 
+    address private immutable __self = address(this);
 
     modifier onlyProxy() {
         require(__self != address(this), "Function must be called through delegatecall");
         require(_getImplementation() == __self, "Function must be called through active proxy");
-        _;    
+        _;
     }
 
     function proxiableUUID() external view virtual override returns (bytes32) {
