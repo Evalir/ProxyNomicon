@@ -2,39 +2,37 @@
 pragma solidity 0.8.7;
 
 import "./IERC1822.sol";
-import {EIP1967Proxy, EIP1967Upgradeable} from "../EIP1967/BasicEIP1967Proxy.sol";
+import {EIP1967Proxy, EIP1967Upgrade} from "../EIP1967/BasicEIP1967Proxy.sol";
 
+/// @title UUPSProxy
+/// @author Enrique Ortiz @Evalir
+/// @notice UNSAFE CODE, USE AT YOUR OWN RISK.
+/// @notice barebones UUPS proxy. Enough logic added for owner upgradeability.
+/// Note that *none* of the multiple safety checks other than the necessary ones
+/// are in place on this version of this proxy.
+/// This proxy could stop being upgradeable if it upgrades to a contract that has
+/// no upgrade mechanism.
+/// This proxy is also brickable if the implementation contract allows DELEGATECALLs
+/// to arbitrary addresses, allowing a SELFDESTRUCT to be called.
 contract UUPSProxy is EIP1967Proxy {
-    bytes32 private constant EIP1967_ADMIN_SLOT = bytes32(uint256(keccak256("eip1967.proxy.admin")) - 1);
-
-    event AdminChanged(address previousAdmin, address newAdmin);
-
-    constructor(address _admin, address implementation) {
-        bytes32 adminSlot = EIP1967_ADMIN_SLOT;
-        assembly {
-            sstore(adminSlot, _admin)
-        }
-        _setImplementation(implementation);
-    }
+    constructor(address _adminAddress, address _implementationAddress) EIP1967Proxy(_adminAddress, _implementationAddress) {}
 
     function implementation() external view returns (address) {
         return _getImplementation();
     }
 
-    modifier onlyAdmin() {
-        address admin = loadAddressSlot(EIP1967_ADMIN_SLOT);
-        require(msg.sender == admin, "not owner");
-        _;
-    }
-
     function changeAdmin(address newAdmin) public onlyAdmin {
-        address previousAdmin = loadAddressSlot(EIP1967_ADMIN_SLOT);
-        setAddressSlot(EIP1967_ADMIN_SLOT, newAdmin);
-        emit AdminChanged(previousAdmin, newAdmin);
+        _changeAdmin(newAdmin);
     }
 }
 
-abstract contract UUPSUpgradeable is IERC1822Proxiable, EIP1967Upgradeable {
+/// @title UUPSUpgradeable
+/// @author Enrique Ortiz Pichardo @Evalir
+/// @notice Abstract contract that defines the functionality that the implementation
+/// contract should implement to become UUPS compliant and upgradeable.
+/// It is extremely important that _authorizeUpgrade is overriden and access control is added,
+/// Or anyone could upgrade the contract.
+abstract contract UUPSUpgradeable is IERC1822Proxiable, EIP1967Upgrade {
     address private immutable __self = address(this);
 
     modifier onlyProxy() {

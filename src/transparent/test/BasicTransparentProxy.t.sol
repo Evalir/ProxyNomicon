@@ -15,8 +15,7 @@ contract TransparentUpgradeableProxyTest is NomiconTest {
         deepThought = new TheMeaningOfLife();
         deepThought.freezeImplementation();
 
-        proxy = new BasicTransparentUpgradeableProxy(address(this));
-        proxy.setImplementation(address(deepThought));
+        proxy = new BasicTransparentUpgradeableProxy(address(this), address(deepThought));
 
         vm.label(address(proxy), "Proxy");
         vm.label(address(deepThought), "Deep Thought");

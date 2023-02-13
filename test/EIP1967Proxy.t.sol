@@ -13,8 +13,7 @@ contract Answer1967ProxyTest is NomiconTest {
 
     function setUp() public {
         answers = new TheAnswer();
-        proxy = new BasicEIP1967Proxy(address(this));
-        proxy.setImplementation(address(answers));
+        proxy = new BasicEIP1967Proxy(address(this), address(answers));
 
         vm.label(address(proxy), "Basic Upgradeable Proxy");
         vm.label(address(answers), "TheAnswer");
@@ -24,8 +23,10 @@ contract Answer1967ProxyTest is NomiconTest {
     }
 
     function test_callWithProxy() public {
-        address(proxy).call(abi.encodeWithSignature("changeTheRealAnswer(uint256)", 42));
-        address(proxy).call(abi.encodeWithSignature("getTheRealAnswer()"));
+        (bool success,) = address(proxy).call(abi.encodeWithSignature("changeTheRealAnswer(uint256)", 42));
+        (bool success2,) = address(proxy).call(abi.encodeWithSignature("getTheRealAnswer()"));
+        assert(success);
+        assert(success2);
         answers.getTheRealAnswer();
     }
 
@@ -36,7 +37,8 @@ contract Answer1967ProxyTest is NomiconTest {
         assert(address(implementationAddress) != address(answers));
         console.log(implementationAddress, address(answers));
 
-        address(proxy).call(abi.encodeWithSignature("changeAnswer1(uint256)", 42));
+        (bool success,) = address(proxy).call(abi.encodeWithSignature("changeAnswer1(uint256)", 42));
+        assert(success);
         (, bytes memory answerData) = address(proxy).call(abi.encodeWithSignature("getAnswer1()"));
 
         uint256 answer = uint256(bytes32(answerData));

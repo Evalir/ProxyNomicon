@@ -3,17 +3,18 @@ pragma solidity 0.8.7;
 
 import {EIP1967Proxy} from "../EIP1967/BasicEIP1967Proxy.sol";
 
+/// @title BasicTransparentUpgradeableProxy
+/// @author Enrique Ortiz @Evalir
+/// @notice UNSAFE CODE, USE AT YOUR OWN RISK.
+/// @notice A basic, transparent upgradeable proxy.
+/// Storage and selector collision resistant.
+/// Forwards all calls directly to its underlying implementation if the caller is not the
+// admin.
+/// Contains all the upgrade logic needed, which simplifies the overall structure of the
+/// proxy.
+/// A bit more expensive to deploy than an UUPS proxy, but much simpler in complexity.
 contract BasicTransparentUpgradeableProxy is EIP1967Proxy {
-    bytes32 private constant EIP1967_ADMIN_SLOT = bytes32(uint256(keccak256("eip1967.proxy.admin")) - 1);
-
-    event AdminChanged(address previousAdmin, address newAdmin);
-
-    constructor(address _admin) {
-        bytes32 adminSlot = EIP1967_ADMIN_SLOT;
-        assembly {
-            sstore(adminSlot, _admin)
-        }
-    }
+    constructor(address _adminAddress, address _implementationAddress) EIP1967Proxy(_adminAddress, _implementationAddress) {}
 
     modifier ifAdmin() {
         if (getAdmin() == msg.sender) {
@@ -29,9 +30,7 @@ contract BasicTransparentUpgradeableProxy is EIP1967Proxy {
     }
 
     function changeAdmin(address newAdmin) public ifAdmin {
-        address previousAdmin = loadAddressSlot(EIP1967_ADMIN_SLOT);
-        setAddressSlot(EIP1967_ADMIN_SLOT, newAdmin);
-        emit AdminChanged(previousAdmin, newAdmin);
+        _changeAdmin(newAdmin);
     }
 
     function implementation() external payable ifAdmin returns (address) {
