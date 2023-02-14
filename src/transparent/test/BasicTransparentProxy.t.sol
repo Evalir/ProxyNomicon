@@ -51,7 +51,7 @@ contract TransparentUpgradeableProxyTest is NomiconTest {
         address oldImplAddress = proxy.implementation();
         assert(oldImplAddress == address(deepThought));
 
-        proxy.setImplementation(address(deepThought2));
+        proxy.upgradeTo(address(deepThought2));
 
         address newImplAddress = proxy.implementation();
         assert(newImplAddress == address(deepThought2));
