@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.7;
+pragma solidity ^0.8.7;
 
 import {EIP1967Proxy} from "../EIP1967/BasicEIP1967Proxy.sol";
 
@@ -34,7 +34,7 @@ contract BasicTransparentUpgradeableProxy is EIP1967Proxy {
         return _implementation();
     }
 
-    function changeAdmin(address newAdmin) public ifAdmin {
+    function changeAdmin(address newAdmin) external payable ifAdmin {
         _changeAdmin(newAdmin);
     }
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.7;
+pragma solidity ^0.8.7;
 
 import "./IERC1822.sol";
 import {EIP1967Proxy, EIP1967Upgrade} from "../EIP1967/BasicEIP1967Proxy.sol";
@@ -26,6 +26,8 @@ contract UUPSProxy is EIP1967Proxy {
 /// contract should implement to become UUPS compliant and upgradeable.
 /// It is extremely important that _authorizeUpgrade is overriden and access control is added,
 /// Or anyone could upgrade the contract.
+/// Note that in this implementation IERC1822Proxiable is unused, as its supposed to be the security mechanism
+/// to ensure that future upgrades are UUPS compliant, but this mechanism is not implemented here.
 abstract contract UUPSUpgradeable is IERC1822Proxiable, EIP1967Upgrade {
     address private immutable __self = address(this);
 
