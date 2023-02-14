@@ -7,7 +7,7 @@ abstract contract Initializable {
     event Initialized(uint8 state);
 
     modifier onlyInitialized() {
-        require(_initialized > 0, "not initialized");
+        require(_initialized == 1, "not initialized");
         _;
     }
 
@@ -16,14 +16,12 @@ abstract contract Initializable {
         _;
     }
 
-    function freezeImplementation() public virtual {
-        require(_initialized == 0, "already initialized");
+    function freezeImplementation() public virtual onlyUninitialized {
         _initialized = type(uint8).max;
         emit Initialized(type(uint8).max);
     }
 
-    function initialized() internal virtual {
-        require(_initialized == 0, "already initialized");
+    function initialized() internal virtual onlyUninitialized {
         _initialized = 1;
         emit Initialized(1);
     }
