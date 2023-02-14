@@ -13,7 +13,7 @@ contract Answer1967ProxyTest is NomiconTest {
 
     function setUp() public {
         answers = new TheAnswer();
-        proxy = new BasicEIP1967Proxy(address(this), address(answers));
+        proxy = new BasicEIP1967Proxy(address(this), address(answers), "");
 
         vm.label(address(proxy), "Basic Upgradeable Proxy");
         vm.label(address(answers), "TheAnswer");

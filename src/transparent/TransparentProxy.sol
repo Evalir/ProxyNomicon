@@ -14,7 +14,9 @@ import {EIP1967Proxy} from "../EIP1967/BasicEIP1967Proxy.sol";
 /// proxy.
 /// A bit more expensive to deploy than an UUPS proxy, but much simpler in complexity.
 contract BasicTransparentUpgradeableProxy is EIP1967Proxy {
-    constructor(address _adminAddress, address _implementationAddress) EIP1967Proxy(_adminAddress, _implementationAddress) {}
+    constructor(address _adminAddress, address _implementationAddress, bytes memory data)
+        EIP1967Proxy(_adminAddress, _implementationAddress, data)
+    {}
 
     modifier ifAdmin() {
         if (getAdmin() == msg.sender) {
@@ -22,6 +24,14 @@ contract BasicTransparentUpgradeableProxy is EIP1967Proxy {
         } else {
             _fallback();
         }
+    }
+
+    function upgradeTo(address newImplementation) external payable ifAdmin {
+        _setImplementation(newImplementation);
+    }
+
+    function implementation() external payable ifAdmin returns (address) {
+        return _implementation();
     }
 
     function setImplementation(address newImplementation) public ifAdmin {
@@ -33,11 +43,12 @@ contract BasicTransparentUpgradeableProxy is EIP1967Proxy {
         _changeAdmin(newAdmin);
     }
 
-    function implementation() external payable ifAdmin returns (address) {
-        return _implementation();
-    }
-
     function getAdmin() internal view returns (address) {
         return loadAddressSlot(EIP1967_ADMIN_SLOT);
+    }
+
+    function _beforeFallback() internal virtual override {
+        require(msg.sender != getAdmin(), "TransparentUpgradeableProxy: admin cannot fallback to proxy target");
+        super._beforeFallback();
     }
 }

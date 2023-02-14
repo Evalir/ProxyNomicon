@@ -57,9 +57,13 @@ abstract contract EIP1967Upgrade {
 /// Needs further extensions for usage. Only provides by itself an override `_implementation()` function
 /// to point to the correct storage slot for the implementation.
 contract EIP1967Proxy is Proxy, EIP1967Upgrade {
-    constructor(address _adminAddress, address _implementationAddress) {
+    constructor(address _adminAddress, address _implementationAddress, bytes memory data) {
         _changeAdmin(_adminAddress);
         _setImplementation(_implementationAddress);
+        if (data.length > 0) {
+            (bool success,) = _implementationAddress.delegatecall(data);
+            require(success, "EIP1967: Initialization failed");
+        }
     }
 
     function _implementation() internal view override returns (address) {
@@ -74,7 +78,9 @@ contract EIP1967Proxy is Proxy, EIP1967Upgrade {
 /// but still vulnerable to selector hash collision. Made for demonstration purposes.
 /// It is also not upgradeable. Upgradeability is provided by a transparent or UUPS proxy.
 contract BasicEIP1967Proxy is EIP1967Proxy {
-    constructor(address _adminAddress, address _implementationAddress) EIP1967Proxy(_adminAddress, _implementationAddress) {}
+    constructor(address _adminAddress, address _implementationAddress, bytes memory data)
+        EIP1967Proxy(_adminAddress, _implementationAddress, data)
+    {}
 
     function implementation() external view returns (address) {
         return _implementation();

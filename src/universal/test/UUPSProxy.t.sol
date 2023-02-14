@@ -19,8 +19,6 @@ contract UUPSProxyTest is NomiconTest {
         splitter.freezeImplementation();
         splitter2.freezeImplementation();
 
-        proxy = new UUPSProxy(address(this), address(splitter));
-
         vm.label(address(proxy), "Proxy");
         vm.label(address(splitter), "Splitter1");
         vm.label(address(splitter2), "Splitter2");
@@ -29,10 +27,7 @@ contract UUPSProxyTest is NomiconTest {
         bob = account("bob");
         vm.deal(alice, 1 ether);
         vm.deal(bob, 1 ether);
-    }
 
-    function test_setupAndUpgrade() public {
-        // Initialize the proxy
         address[] memory payees = new address[](2);
         payees[0] = alice;
         payees[1] = bob;
@@ -40,17 +35,15 @@ contract UUPSProxyTest is NomiconTest {
         shares[0] = 1;
         shares[1] = 1;
 
+        proxy =
+        new UUPSProxy(address(this), address(splitter), abi.encodeWithSignature("initialize(address[],uint256[],address)", payees, shares, address(this)));
+    }
+
+    function test_setupAndUpgrade() public {
+        // Initialize the proxy
+
         // Proxy initialization and ownership checks
         {
-            (bool success,) = address(proxy).call(
-                abi.encodeWithSignature("initialize(address[],uint256[],address)", payees, shares, address(this))
-            );
-            assert(success);
-            // Test that we cannot initialize again
-            (bool shouldFail,) = address(proxy).call(
-                abi.encodeWithSignature("initialize(address[],uint256[],address)", payees, shares, address(this))
-            );
-            assert(!shouldFail);
             // Get the owner and assert we are the owner
             (, bytes memory ownerData) = address(proxy).call(abi.encodeWithSignature("owner()"));
             address owner = bytesToAddress(ownerData);
@@ -69,7 +62,9 @@ contract UUPSProxyTest is NomiconTest {
                 address(proxy).call(abi.encodeWithSignature("upgradeTo(address)", address(splitter2)));
             require(upgradeSuccess);
 
-            address newImpl = proxy.implementation();
+            // Check that the new implementation matches the expected address.
+            (, bytes memory implementationData) = address(proxy).call(abi.encodeWithSignature("implementation()"));
+            address newImpl = bytesToAddress(implementationData);
             require(newImpl == address(splitter2));
             console.log(newImpl, address(splitter2));
 

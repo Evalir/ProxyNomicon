@@ -15,15 +15,9 @@ import {EIP1967Proxy, EIP1967Upgrade} from "../EIP1967/BasicEIP1967Proxy.sol";
 /// This proxy is also brickable if the implementation contract allows DELEGATECALLs
 /// to arbitrary addresses, allowing a SELFDESTRUCT to be called.
 contract UUPSProxy is EIP1967Proxy {
-    constructor(address _adminAddress, address _implementationAddress) EIP1967Proxy(_adminAddress, _implementationAddress) {}
-
-    function implementation() external view returns (address) {
-        return _getImplementation();
-    }
-
-    function changeAdmin(address newAdmin) public onlyAdmin {
-        _changeAdmin(newAdmin);
-    }
+    constructor(address _adminAddress, address _implementationAddress, bytes memory data)
+        EIP1967Proxy(_adminAddress, _implementationAddress, data)
+    {}
 }
 
 /// @title UUPSUpgradeable
@@ -41,7 +35,12 @@ abstract contract UUPSUpgradeable is IERC1822Proxiable, EIP1967Upgrade {
         _;
     }
 
-    function proxiableUUID() external view virtual override returns (bytes32) {
+    modifier notDelegated() {
+        require(address(this) == __self, "UUPSUpgradeable: should not be called through delegatecall");
+        _;
+    }
+
+    function proxiableUUID() external view virtual override notDelegated returns (bytes32) {
         return EIP1967_IMPLEMENTATION_SLOT;
     }
 
@@ -51,4 +50,12 @@ abstract contract UUPSUpgradeable is IERC1822Proxiable, EIP1967Upgrade {
     }
 
     function _authorizeUpgrade(address newImplementation) internal virtual;
+
+    function implementation() external view returns (address) {
+        return _getImplementation();
+    }
+
+    function changeAdmin(address newAdmin) public onlyAdmin {
+        _changeAdmin(newAdmin);
+    }
 }

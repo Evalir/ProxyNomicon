@@ -8,25 +8,26 @@ import "../../transparent/TransparentProxy.sol";
 
 contract TransparentUpgradeableProxyTest is NomiconTest {
     TheMeaningOfLife public deepThought;
+    TheMeaningOfLife public deepThought2;
     BasicTransparentUpgradeableProxy public proxy;
     address alice;
 
     function setUp() public {
         deepThought = new TheMeaningOfLife();
+        deepThought2 = new TheMeaningOfLife();
         deepThought.freezeImplementation();
-
-        proxy = new BasicTransparentUpgradeableProxy(address(this), address(deepThought));
+        deepThought2.freezeImplementation();
 
         vm.label(address(proxy), "Proxy");
         vm.label(address(deepThought), "Deep Thought");
 
         alice = account("alice");
         vm.deal(alice, 1 ether);
+
+        proxy = new BasicTransparentUpgradeableProxy(address(this), address(deepThought), "");
     }
 
     function test_transparency() public {
-        (bool success,) = address(proxy).call(abi.encodeWithSignature("initialize(uint256)", 42));
-        assert(success);
         (bool shouldFail,) = address(proxy).call(abi.encodeWithSignature("initialize(uint256)", 1337));
         assert(!shouldFail);
 
@@ -42,6 +43,17 @@ contract TransparentUpgradeableProxyTest is NomiconTest {
         vm.prank(alice);
         address notImplAddr = proxy.implementation();
         assert(address(deepThought) != notImplAddr);
+        assert(address(42) == notImplAddr);
         console.log(notImplAddr, address(deepThought));
+    }
+
+    function test_upgradeability() public {
+        address oldImplAddress = proxy.implementation();
+        assert(oldImplAddress == address(deepThought));
+
+        proxy.setImplementation(address(deepThought2));
+
+        address newImplAddress = proxy.implementation();
+        assert(newImplAddress == address(deepThought2));
     }
 }
