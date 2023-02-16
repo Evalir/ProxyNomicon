@@ -2,9 +2,9 @@
 pragma solidity ^0.8.7;
 
 import "forge-std/Test.sol";
-import "../src/lib/NomiconTest.sol";
-import "../src/basic/TheAnswer.sol";
-import "../src/EIP1967/BasicEIP1967Proxy.sol";
+import "../src/contracts/lib/NomiconTest.sol";
+import "../src/contracts/basic/TheAnswer.sol";
+import "../src/contracts/EIP1967/BasicEIP1967Proxy.sol";
 
 contract Answer1967ProxyTest is NomiconTest {
     TheAnswer public answers;
