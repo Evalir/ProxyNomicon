@@ -1,0 +1,6 @@
+[book]
+authors = ["Enrique Ortiz"]
+language = "en"
+multilingual = false
+src = "src"
+title = "ProxyNomicon"
