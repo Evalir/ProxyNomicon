@@ -6,7 +6,7 @@ import "../../lib/NomiconTest.sol";
 import "../../finance/InitializablePaymentSplitter.sol";
 import "../../EIP1967/BasicEIP1967Proxy.sol";
 
-contract EIP1967ProxyTest is NomiconTest {
+contract EIP1967ProxyInitializeTest is NomiconTest {
     PaymentSplitter public splitterImplementation;
     BasicEIP1967Proxy public proxy;
     address alice;
